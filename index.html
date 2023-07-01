@@ -1,53 +1,156 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Index</title>
+  <title>LAW VIDEOS HUB</title>
   <style>
+    /* Main Styles */
     body {
       font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
     }
+
     .container {
-      max-width: 600px;
-      margin: 0 auto;
+      display: flex;
+    }
+
+    /* Header Styles */
+    .header {
+      background-color: #333;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+      background-color: #f1f1f1;
+      width: 200px;
       padding: 20px;
     }
-    h2 {
-      margin-bottom: 20px;
-    }
-    ul {
+
+    .sidebar ul {
       list-style-type: none;
       padding: 0;
     }
-    li {
+
+    .sidebar ul li {
       margin-bottom: 10px;
+    }
+
+    .sidebar ul li a {
+      text-decoration: none;
+      color: #333;
+    }
+
+    /* Main Section Styles */
+    .main {
+      flex-grow: 1;
+      padding: 20px;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-gap: 20px;
+    }
+
+    .video-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .video-item iframe {
+      width: 100%;
+      height: 200px;
     }
   </style>
 </head>
 <body>
+  <div class="header">
+    <h1>LAW VIDEOS HUB</h1>
+  </div>
+
   <div class="container">
-    <h2>Categories</h2>
-    <ul id="categoryList"></ul>
+    <div class="sidebar">
+      <ul id="categoryList"></ul>
+    </div>
+
+    <div class="main">
+      <div class="video-grid" id="videoGrid"></div>
+    </div>
   </div>
 
   <script>
-    function fetchCSVFile(fileUrl, callback) {
-      fetch(fileUrl)
-        .then(response => response.text())
-        .then(csvData => {
-          callback(csvData);
-        })
-        .catch(error => {
-          console.error("Error reading CSV file:", error);
-        });
-    }
+    // Fetch the mainPage.csv file
+    fetch("mainPage.csv")
+      .then(response => response.text())
+      .then(csvData => {
+        const videos = parseCSVData(csvData);
+        displayVideos(videos);
+      })
+      .catch(error => {
+        console.error("Error reading CSV file:", error);
+      });
 
     function parseCSVData(csvData) {
+      const csvRows = csvData.split("\n");
+      const videos = [];
+
+      for (let i = 1; i < csvRows.length; i++) {
+        const rowData = csvRows[i].split(",");
+        if (rowData.length >= 3) {
+          const category = rowData[0].trim();
+          const title = rowData[1].trim();
+          const youtubeLink = rowData[2].trim();
+          console.log(category, title, youtubeLink)
+          videos.push({ category, title, youtubeLink });
+        }
+      }
+
+      return videos;
+    }
+
+    function displayVideos(videos) {
+      const videoGrid = document.getElementById("videoGrid");
+
+      videos.forEach(video => {
+        const videoItem = document.createElement("div");
+        videoItem.classList.add("video-item");
+
+        const iframe = document.createElement("iframe");
+        iframe.src = `https://www.youtube.com/embed/${video.youtubeLink}`;
+        iframe.frameborder = "0";
+        iframe.allowfullscreen = true;
+
+        const title = document.createElement("h3");
+        title.textContent = video.title;
+
+        videoItem.appendChild(iframe);
+        videoItem.appendChild(title);
+        videoGrid.appendChild(videoItem);
+      });
+    }
+
+    // Fetch the categories.csv file
+    fetch("categories.csv")
+      .then(response => response.text())
+      .then(csvData => {
+        const categories = parseCategoriesCSVData(csvData);
+        displayCategories(categories);
+      })
+      .catch(error => {
+        console.error("Error reading CSV file:", error);
+      });
+
+    function parseCategoriesCSVData(csvData) {
       const csvRows = csvData.split("\n");
       const categories = [];
 
       for (let i = 1; i < csvRows.length; i++) {
         const rowData = csvRows[i].split(",");
-        if (rowData.length > 0) {
+        if (rowData.length >= 1) {
           const category = rowData[0].trim();
           categories.push(category);
         }
@@ -56,25 +159,19 @@
       return categories;
     }
 
-    function createCategoryLinks(categories) {
+    function displayCategories(categories) {
       const categoryList = document.getElementById("categoryList");
 
       categories.forEach(category => {
         const listItem = document.createElement("li");
         const link = document.createElement("a");
-        link.textContent = category;
         link.href = `categories.html?category=${encodeURIComponent(category)}`;
+        link.textContent = category;
+
         listItem.appendChild(link);
         categoryList.appendChild(listItem);
       });
     }
-
-    const csvFileUrl = "categories.csv";
-
-    fetchCSVFile(csvFileUrl, function(csvData) {
-      const categories = parseCSVData(csvData);
-      createCategoryLinks(categories);
-    });
   </script>
 </body>
 </html>
