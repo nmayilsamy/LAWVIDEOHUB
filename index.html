@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>CSV Data Viewer</title>
+  <title>CSV Data Form</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -23,20 +23,57 @@
       background-color: #f2f2f2;
       font-weight: bold;
     }
+    form {
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 8px;
+    }
+    input[type="submit"] {
+      background-color: #4CAF50;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>CSV Data Viewer</h2>
+    <h2>CSV Data Form</h2>
+    <form id="csvForm">
+      <label for="nameInput">Name:</label>
+      <input type="text" id="nameInput" required>
+      <label for="emailInput">Email:</label>
+      <input type="text" id="emailInput" required>
+      <input type="submit" value="Save to CSV">
+    </form>
     <table id="csvTable"></table>
   </div>
 
   <script>
-    fetch("data.csv")
-      .then(response => response.text())
-      .then(csvData => {
+    function downloadCSV(csvContent) {
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", "data:text/csv;charset=utf-8," + encodedUri);
+      link.setAttribute("download", "data.csv");
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function readCSVFile(file) {
+      const reader = new FileReader();
+
+      reader.onload = function (event) {
+        const csvData = event.target.result;
         const csvRows = csvData.split("\n");
         const table = document.getElementById("csvTable");
+
+        table.innerHTML = "";
 
         for (let i = 0; i < csvRows.length; i++) {
           const rowData = csvRows[i].split(",");
@@ -50,10 +87,58 @@
 
           table.appendChild(row);
         }
+      };
+
+      reader.onerror = function (event) {
+        console.error("Error reading CSV file:", event.target.error);
+      };
+
+      reader.readAsText(file);
+    }
+
+    function saveFormData(event) {
+      event.preventDefault();
+      const name = document.getElementById("nameInput").value;
+      const email = document.getElementById("emailInput").value;
+
+      const csvRow = `${name},${email}`;
+
+      fetch("data.csv", {
+        method: "POST",
+        body: csvRow,
+        headers: {
+          "Content-Type": "text/csv"
+        }
       })
-      .catch(error => {
-        console.error("Error reading CSV file:", error);
-      });
+        .then(response => {
+          if (response.ok) {
+            console.log("Data saved successfully.");
+            document.getElementById("csvForm").reset();
+          } else {
+            console.error("Failed to save data.");
+          }
+        })
+        .catch(error => {
+          console.error("Error saving data:", error);
+        });
+    }
+
+    function fetchCSVFile() {
+      fetch("data.csv")
+        .then(response => response.text())
+        .then(csvData => {
+          readCSVFile(new Blob([csvData]));
+        })
+        .catch(error => {
+          console.error("Error reading CSV file:", error);
+        });
+    }
+
+    const csvForm = document.getElementById("csvForm");
+
+    csvForm.addEventListener("submit", saveFormData);
+
+    fetchCSVFile();
   </script>
 </body>
 </html>
