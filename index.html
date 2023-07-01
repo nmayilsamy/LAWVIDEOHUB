@@ -70,11 +70,15 @@
 <body>
   <div class="header">
     <h1>LAW VIDEOS HUB</h1>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1217383578656513"
+     crossorigin="anonymous"></script>
   </div>
 
   <div class="container">
     <div class="sidebar">
       <ul id="categoryList"></ul>
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1217383578656513"
+     crossorigin="anonymous"></script>
     </div>
 
     <div class="main">
@@ -94,7 +98,16 @@
         console.error("Error reading CSV file:", error);
       });
 
+  function reverseCSVData(csvData) {
+  const rows = csvData.split('\n').map(row => row.trim());
+  const reversedCSV = rows.reverse().join('\n');
+  return reversedCSV;
+}
+
+
+
     function parseCSVData(csvData) {
+        csvData = reverseCSVData(csvData)
       const csvRows = csvData.split("\n");
       const videos = [];
 
