@@ -44,7 +44,7 @@
 
       for (let i = 1; i < csvRows.length; i++) {
         const rowData = csvRows[i].split(",");
-        if (rowData.length > 0) {
+        if (rowData.length >= 2) { // Check if the row has at least two columns
           const category = rowData[0].trim();
           const youtubeLink = rowData[1].trim();
           categories.push({ category, youtubeLink });
@@ -59,36 +59,35 @@
       return urlParams.get("category");
     }
 
-    function displayCategory(category, youtubeLink) {
+    function displayCategory(category, youtubeLinks) {
       const categoryHeading = document.getElementById("categoryHeading");
       categoryHeading.textContent = category;
 
       const youtubePlayer = document.getElementById("youtubePlayer");
-      youtubePlayer.innerHTML = `
-        <iframe
-          width="560"
-          height="315"
-          src="https://www.youtube.com/embed/${youtubeLink}"
-          frameborder="0"
-          allowfullscreen
-        ></iframe>
-      `;
+
+      youtubeLinks.forEach(youtubeLink => {
+        const iframe = document.createElement("iframe");
+        iframe.width = "560";
+        iframe.height = "315";
+        iframe.src = `https://www.youtube.com/embed/${youtubeLink}`;
+        iframe.frameBorder = "0";
+        iframe.allowFullscreen = true;
+        youtubePlayer.appendChild(iframe);
+      });
     }
 
-    const csvFileUrl = "../categories.csv";
+    const csvFileUrl = "youtubelink.csv";
 
     fetchCSVFile(csvFileUrl, function(csvData) {
       const categories = parseCSVData(csvData);
       const categoryParam = getCategoryFromParams();
-      const filteredCategory = categories.find(
+      const filteredCategories = categories.filter(
         category => category.category === categoryParam
       );
 
-      if (filteredCategory) {
-        displayCategory(
-          filteredCategory.category,
-          filteredCategory.youtubeLink
-        );
+      if (filteredCategories.length > 0) {
+        const youtubeLinks = filteredCategories.map(category => category.youtubeLink);
+        displayCategory(categoryParam, youtubeLinks);
       } else {
         console.error("Category not found");
       }
