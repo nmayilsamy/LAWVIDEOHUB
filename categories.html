@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Category</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    .youtube-video {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Category</h2>
+    <div id="youtubeVideos"></div>
+  </div>
+
+  <script>
+    function fetchCSVFile(fileUrl, callback) {
+      fetch(fileUrl)
+        .then(response => response.text())
+        .then(csvData => {
+          callback(csvData);
+        })
+        .catch(error => {
+          console.error("Error reading CSV file:", error);
+        });
+    }
+
+    function parseCSVData(csvData) {
+      const csvRows = csvData.split("\n");
+      const youtubeLinks = [];
+
+      for (let i = 1; i < csvRows.length; i++) {
+        const rowData = csvRows[i].split(",");
+        if (rowData.length > 1) {
+          const category = rowData[0].trim();
+          const youtubeLink = rowData[1].trim();
+
+          if (category === selectedCategory) {
+            youtubeLinks.push(youtubeLink);
+          }
+        }
+      }
+
+      return youtubeLinks;
+    }
+
+    function embedYouTubeVideos(youtubeLinks) {
+      const youtubeVideosContainer = document.getElementById("youtubeVideos");
+
+      youtubeLinks.forEach(youtubeLink => {
+        const youtubeVideo = document.createElement("div");
+        youtubeVideo.classList.add("youtube-video");
+        youtubeVideo.innerHTML = `<iframe width="560" height="315" src="${youtubeLink}" frameborder="0" allowfullscreen></iframe>`;
+        youtubeVideosContainer.appendChild(youtubeVideo);
+      });
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedCategory = urlParams.get("category");
+    const csvFileUrl = `../youtubelink.csv`;
+
+    fetchCSVFile(csvFileUrl, function(csvData) {
+      const youtubeLinks = parseCSVData(csvData);
+      embedYouTubeVideos(youtubeLinks);
+    });
+  </script>
+</body>
+</html>
