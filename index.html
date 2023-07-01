@@ -43,7 +43,6 @@
 
     function parseCSVData(csvData) {
       const csvRows = csvData.split("\n");
-      console.log(csvRows)
       const categories = [];
 
       for (let i = 1; i < csvRows.length; i++) {
@@ -64,7 +63,7 @@
         const listItem = document.createElement("li");
         const link = document.createElement("a");
         link.textContent = category;
-        link.href = `categories/${category}.html`;
+        link.href = `categories.html?category=${encodeURIComponent(category)}`;
         listItem.appendChild(link);
         categoryList.appendChild(listItem);
       });
